@@ -1,0 +1,45 @@
+# Node.js Express Web App to Linux on Azure
+# Build a Node.js Express app and deploy it to Azure as a Linux web app.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- main
+
+variables:
+
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: '63264dd4-681a-41c5-a660-58bd1af2df0c'
+
+  # Web app name
+  webAppName: 'angular-16-client-dev1'
+
+  # Environment name
+  environmentName: 'angular-16-client-dev1'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '18.x.x'
+      displayName: 'Install Node.js'
+
+    - script: |
+        npm install -g @angular/cli
+        npm install
+        npm run build-prod
+      displayName: 'Install npm packages'
+    
+    - task: CopyFiles@2
+      inputs:
+        contents: 'dist/**/*'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+      displayName: 'Copy files to artifact staging directory'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+           pathToPublish: '$(Build.ArtifactStagingDirectory)'
+           artifactName: 'drop'
+      displayName: 'Publish build artifacts'
